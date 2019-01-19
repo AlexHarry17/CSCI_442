@@ -275,17 +275,37 @@ class IMP implements MouseListener {
         resetPicture();
     }
 
+//    private void rotateImage() {    // Method to rotate the image 90 degrees.
+//        int temp[][] = new int[width][height];
+//        for (int i = 0; i < height; i++)
+//            for (int j = width - 1; j >= 0; j--) {
+//                temp[j][i] = picture[i][j];
+//            }
+//        picture = temp;
+//        int heightTemp = height;
+//        height = width;
+//        width = heightTemp;
+//        resetPicture();
+//    }
+
     private void rotateImage() {    // Method to rotate the image 90 degrees.
         int temp[][] = new int[width][height];
+        int w = height - 1;
         for (int i = 0; i < height; i++)
             for (int j = 0; j < width; j++) {
-                temp[j][i] = picture[i][j];
+                temp[w][j] = picture[i][j];
+                if (w == 0){
+                    w = height;
+                }
+                else{
+                    w--;
+                }
             }
+        int heightTemp = height;
+        height = width;
+        width = heightTemp;
         picture = temp;
-        for (int i = 0; i < height; i++)
-            for (int j = 0; j < width; j++) {
-                System.out.println(picture[j][i]);
-            }
+
         resetPicture();
     }
 
