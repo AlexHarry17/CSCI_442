@@ -12,7 +12,6 @@ import java.awt.image.MemoryImageSource;
 import java.util.prefs.Preferences;
 
 //TODO Fix the reset function in the pulldown menu. I fixed it on mine now, but it's a good practice on learning the code and figuring out what's going on.
-//TODO        Turn an image into grayscale and display it, use the "Luminosity" method for grayscale conversion. You can put the grayscale value using the three channel, you don't have to create a new image.
 /*TODO        Blur the grayscale image, use an average of surrounding pixels to blur the image, you will need a second array so you don't use already blurred pixels in your calculations.  First, call the grayscale method from number three.
         The last thing set the original picture array to your temporary blurred array and call resetPicture() */
 /*TODO  Turn a color image into a grayscale image first and then do a minimum of 3x3 mask to do edge detection. 5x5 will work better and be worth more.
@@ -330,17 +329,15 @@ class IMP implements MouseListener {
 
 
     private void greyScale() { // Method to turn picture to grey scale.
-        int rgbArray[] = new int[4];
         for (int i = 0; i < height; i++)
             for (int j = 0; j < width; j++) {
-                //get three ints for R, G and B
+                int rgbArray[] = new int[4]; //get three ints for R, G and B
                 rgbArray = getPixelArray(picture[i][j]);
-                rgbArray[1] = checkValues(rgbArray[1] * 0.21); // Changes red value.
-                rgbArray[2] = checkValues(rgbArray[2] * 0.72); // Changes Green Value.
-                rgbArray[3] = checkValues(rgbArray[3] * 0.07); // Changes blue value.
-
-                //take three ints for R, G, B and put them back into a single int
-                picture[i][j] = getPixels(rgbArray);
+                int lumos_value = checkValues((rgbArray[1] * 0.21) + (rgbArray[2] * 0.72) + (rgbArray[3] * 0.07));  // Luminosity formula for current pixel.
+                for (int count = 1; count < rgbArray.length; count++){
+                    rgbArray[count] = lumos_value;  //Sets r,g,b to luminosity value
+                }
+                picture[i][j] = getPixels(rgbArray);    // sets  pixel to luminosity value.
             }
         resetPicture();
     }
