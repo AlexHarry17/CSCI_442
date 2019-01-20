@@ -11,6 +11,21 @@ import java.awt.image.PixelGrabber;
 import java.awt.image.MemoryImageSource;
 import java.util.prefs.Preferences;
 
+//TODO Fix the reset function in the pulldown menu. I fixed it on mine now, but it's a good practice on learning the code and figuring out what's going on.
+//TODO        Turn an image into grayscale and display it, use the "Luminosity" method for grayscale conversion. You can put the grayscale value using the three channel, you don't have to create a new image.
+/*TODO        Blur the grayscale image, use an average of surrounding pixels to blur the image, you will need a second array so you don't use already blurred pixels in your calculations.  First, call the grayscale method from number three.
+        The last thing set the original picture array to your temporary blurred array and call resetPicture() */
+/*TODO  Turn a color image into a grayscale image first and then do a minimum of 3x3 mask to do edge detection. 5x5 will work better and be worth more.
+        See notes below */
+/*TODO        Show a histogram of the colors in a separate window
+        See notes below */
+/*TODO        Use the values in the histogram to equalize the image:
+        Use the mapping function to normalize the distribution evenly
+        https://en.wikipedia.org/wiki/Histogram_equalization */
+/*TODO        Track a colored object.....orange is easiest. Result is a binary image that is black except where the colored object is located.
+        See notes below (I'll also cover this next Wednesday) */
+
+
 class IMP implements MouseListener {
     JFrame frame;
     JPanel mp;
@@ -216,7 +231,6 @@ class IMP implements MouseListener {
         JLabel label2 = new JLabel(new ImageIcon(img2));
         mp.removeAll();
         mp.add(label2);
-
         mp.revalidate();
     }
 
@@ -306,7 +320,7 @@ class IMP implements MouseListener {
                 counter++;
             }
         }
-        mp.repaint();
+        mp.repaint(); // repaints image to black background
         picture = temp_picture; // sets picture to the temp variable.
         int heightTemp = height;
         height = width; // Changes the height of the picture variable.
