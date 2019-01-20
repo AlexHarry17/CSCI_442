@@ -11,7 +11,6 @@ import java.awt.image.PixelGrabber;
 import java.awt.image.MemoryImageSource;
 import java.util.prefs.Preferences;
 
-//TODO Fix the reset function in the pulldown menu. I fixed it on mine now, but it's a good practice on learning the code and figuring out what's going on.
 /*TODO  Turn a color image into a grayscale image first and then do a minimum of 3x3 mask to do edge detection. 5x5 will work better and be worth more.
         See notes below */
 /*TODO        Show a histogram of the colors in a separate window
