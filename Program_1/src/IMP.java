@@ -334,7 +334,7 @@ class IMP implements MouseListener {
                 int rgbArray[] = new int[4]; //get three ints for R, G and B
                 rgbArray = getPixelArray(picture[i][j]);
                 int lumos_value = checkValues((rgbArray[1] * 0.21) + (rgbArray[2] * 0.72) + (rgbArray[3] * 0.07));  // Luminosity formula for current pixel.
-                for (int count = 1; count < rgbArray.length; count++){
+                for (int count = 1; count < rgbArray.length; count++) {
                     rgbArray[count] = lumos_value;  //Sets r,g,b to luminosity value
                 }
                 picture[i][j] = getPixels(rgbArray);    // sets  pixel to luminosity value.
@@ -343,24 +343,33 @@ class IMP implements MouseListener {
     }
 
     private void blur() {
-        int temp[][] = new int[height][width];
+        int[][] temp = picture;
         int boundryAdjust[] = {-1, 0, 1}; // array to loop through for surrounding values.
-        int surrounding_count = (boundryAdjust.length * 2) - 1;
+        int surrounding_count = (boundryAdjust.length * 2);
         greyScale(); // Sets picture to grey scale
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
+        for (int i = 1; i < height - 2; i++) {
+            for (int j = 1; j < width - 2; j++) {
+                int[] rgb = new int[4];
                 int average_values = 0;
                 for (int h = 0; h < boundryAdjust.length; h++) {
                     for (int w = 0; w < boundryAdjust.length; w++) {
                         if (h != 0 && w != 0) { // Skips value we are surrounding
-                            average_values += picture[i + h][j + w];
+                                int[] rgbArray = getPixelArray(picture[(i + boundryAdjust[h])][(j + boundryAdjust[w])]);
+                                for (int count = 0; count < rgbArray.length; count++) {
+                                    rgb[count] += rgbArray[count];
+
+                            }
                         }
                     }
                 }
-                temp[i][j] = average_values / surrounding_count;
+                for (int count = 0; count < rgb.length; count++) {
+                    rgb[count] /= surrounding_count;
+                }
+                temp[i][j] = getPixels(rgb);
             }
         }
         picture = temp;
+        mp.repaint();
         resetPicture();
     }
 
