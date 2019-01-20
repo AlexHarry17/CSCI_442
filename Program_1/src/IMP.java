@@ -12,8 +12,6 @@ import java.awt.image.MemoryImageSource;
 import java.util.prefs.Preferences;
 
 //TODO Fix the reset function in the pulldown menu. I fixed it on mine now, but it's a good practice on learning the code and figuring out what's going on.
-/*TODO        Blur the grayscale image, use an average of surrounding pixels to blur the image, you will need a second array so you don't use already blurred pixels in your calculations.  First, call the grayscale method from number three.
-        The last thing set the original picture array to your temporary blurred array and call resetPicture() */
 /*TODO  Turn a color image into a grayscale image first and then do a minimum of 3x3 mask to do edge detection. 5x5 will work better and be worth more.
         See notes below */
 /*TODO        Show a histogram of the colors in a separate window
@@ -37,6 +35,8 @@ class IMP implements MouseListener {
     int colorX, colorY;
     int[] pixels;
     int[] results;
+    int originalWidth;
+    int originalHeight;
     //Instance Fields you will be using below
 
     //This will be your height and width of your 2d array
@@ -178,7 +178,6 @@ class IMP implements MouseListener {
         //  fun.add(edgeDetection);
         fun.add(histogram);
         fun.add(colorDetection);
-
         return fun;
 
     }
@@ -203,6 +202,8 @@ class IMP implements MouseListener {
         }
         width = img.getIconWidth();
         height = img.getIconHeight();
+        originalHeight = height;
+        originalWidth = width;
 
         JLabel label = new JLabel(img);
         label.addMouseListener(this);
@@ -245,14 +246,19 @@ class IMP implements MouseListener {
      *  This method takes the picture back to the original picture
      */
     private void reset() {
+        width = originalWidth;
+        height = originalHeight;
+        img = null;
         for (int i = 0; i < width * height; i++)
             pixels[i] = results[i];
         Image img2 = toolkit.createImage(new MemoryImageSource(width, height, pixels, 0, width));
-
         JLabel label2 = new JLabel(new ImageIcon(img2));
+        turnTwoDimensional();
         mp.removeAll();
         mp.add(label2);
         mp.revalidate();
+        mp.repaint();
+
     }
 
     /*
@@ -343,9 +349,7 @@ class IMP implements MouseListener {
         }
         mp.repaint(); // repaints image to black background
         picture = temp_picture; // sets picture to the temp variable.
-        int heightTemp = height;
-        height = width; // Changes the height of the picture variable.
-        width = heightTemp; // Changes the width of the picture variable.
+        switchHeightWidth();
         resetPicture();
     }
 
@@ -388,7 +392,7 @@ class IMP implements MouseListener {
                 }
                 temp[i][j] = getPixels(rgbArray);   // Adds the pixel of the blurred image in a temp array.
             }
-        picture = temp; 
+        picture = temp;
         resetPicture();
     }
 
@@ -419,6 +423,13 @@ class IMP implements MouseListener {
             return (int) rgb_value;
         }
     }
+
+    private void switchHeightWidth() {
+        int heightTemp = height;
+        height = width; // Changes the height of the picture variable.
+        width = heightTemp; // Changes the width of the picture variable.
+    }
+
 
     private void quit() {
         System.exit(0);
