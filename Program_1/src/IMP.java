@@ -292,36 +292,26 @@ class IMP implements MouseListener {
         resetPicture();
     }
 
-//    private void rotateImage() {    // Method to rotate the image 90 degrees.
-//        int temp[][] = new int[width][height];
-//        for (int i = 0; i < height; i++)
-//            for (int j = width - 1; j >= 0; j--) {
-//                temp[j][i] = picture[i][j];
-//            }
-//        picture = temp;
-//        int heightTemp = height;
-//        height = width;
-//        width = heightTemp;
-//        resetPicture();
-//    }
 
     private void rotateImage() {    // Method to rotate the image 90 degrees.
-        int temp[][] = new int[width][height];
-        int w = height - 1;
+        int temp[] = new int[width * height];
+        int counter = 0;
         for (int i = 0; i < height; i++)
             for (int j = 0; j < width; j++) {
-                temp[i][j] = picture[i][w];
-                if (w == 0) {
-                    w = height;
-                } else {
-                    w--;
-                }
+                temp[counter] = picture[i][j];  // Single array that stores all of the pixels.
+                counter++;
             }
+        int temp_picture[][] = new int[width][height];  // temp array to not affect the original picture.
+        counter = 0;
+        for (int i = 0; i < height; i++){
+            for (int j = width - 1; j >= 0; j--) {
+                temp_picture[j][i] = temp[counter]; // Loops through, rotating the picture into the temp array holder.
+                counter++;
+            }}
+        picture = temp_picture; // sets picture to the temp variable.
         int heightTemp = height;
-        height = width;
-        width = heightTemp;
-        picture = temp;
-
+        height = width; // Changes the height of the picture variable.
+        width = heightTemp; // Changes the width of the picture variable.
         resetPicture();
     }
 
@@ -353,11 +343,11 @@ class IMP implements MouseListener {
                 for (int h = 0; h < boundryAdjust.length; h++) {
                     for (int w = 0; w < boundryAdjust.length; w++) {
                         if (h != 0 && w != 0) { // Skips value we are surrounding
-                        average_values += picture[i + h][j + w];
+                            average_values += picture[i + h][j + w];
                         }
                     }
                 }
-            temp[i][j] = average_values / surrounding_count;
+                temp[i][j] = average_values / surrounding_count;
             }
         }
         picture = temp;
