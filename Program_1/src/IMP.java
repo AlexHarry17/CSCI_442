@@ -104,6 +104,8 @@ class IMP implements MouseListener {
 
         JMenuItem firstItem = new JMenuItem("MyExample - removeRed method");
         JMenuItem rotate = new JMenuItem("Rotate Image"); // Dropdown menu item
+        JMenuItem greyScale = new JMenuItem("Grey Scale"); // Dropdown menu item
+        JMenuItem blur = new JMenuItem("Blur Image"); // Dropdown menu item
 
 
         firstItem.addActionListener(new ActionListener() {
@@ -120,9 +122,24 @@ class IMP implements MouseListener {
             }
         });
 
+        greyScale.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                greyScale();  // Calls method to rotate the image.
+            }
+        });
+
+        blur.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                blur();  // Calls method to rotate the image.
+            }
+        });
 
         fun.add(firstItem);
         fun.add(rotate);
+        fun.add(greyScale);
+        fun.add(blur);
 
 
         return fun;
@@ -293,11 +310,10 @@ class IMP implements MouseListener {
         int w = height - 1;
         for (int i = 0; i < height; i++)
             for (int j = 0; j < width; j++) {
-                temp[w][j] = picture[i][j];
-                if (w == 0){
+                temp[i][j] = picture[i][w];
+                if (w == 0) {
                     w = height;
-                }
-                else{
+                } else {
                     w--;
                 }
             }
@@ -307,6 +323,55 @@ class IMP implements MouseListener {
         picture = temp;
 
         resetPicture();
+    }
+
+
+    private void greyScale() { // Method to turn picture to grey scale.
+        int rgbArray[] = new int[4];
+        for (int i = 0; i < height; i++)
+            for (int j = 0; j < width; j++) {
+                //get three ints for R, G and B
+                rgbArray = getPixelArray(picture[i][j]);
+                rgbArray[1] = checkValues(rgbArray[1] * 0.21); // Changes red value.
+                rgbArray[2] = checkValues(rgbArray[2] * 0.72); // Changes Green Value.
+                rgbArray[3] = checkValues(rgbArray[3] * 0.07); // Changes blue value.
+
+                //take three ints for R, G, B and put them back into a single int
+                picture[i][j] = getPixels(rgbArray);
+            }
+        resetPicture();
+    }
+
+    private void blur() {
+        int temp[][] = new int[height][width];
+        int boundryAdjust[] = {-1, 0, 1}; // array to loop through for surrounding values.
+        int surrounding_count = (boundryAdjust.length * 2) - 1;
+        greyScale(); // Sets picture to grey scale
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                int average_values = 0;
+                for (int h = 0; h < boundryAdjust.length; h++) {
+                    for (int w = 0; w < boundryAdjust.length; w++) {
+                        if (h != 0 && w != 0) { // Skips value we are surrounding
+                        average_values += picture[i + h][j + w];
+                        }
+                    }
+                }
+            temp[i][j] = average_values / surrounding_count;
+            }
+        }
+        picture = temp;
+        resetPicture();
+    }
+
+    private int checkValues(double rgb_value) { //Corrects value if greater than 255 or less than 0
+        if (rgb_value > 255.0) {
+            return 255;
+        } else if (rgb_value < 0.0) {
+            return 0;
+        } else {
+            return (int) rgb_value;
+        }
     }
 
     private void quit() {
