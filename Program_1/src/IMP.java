@@ -120,6 +120,9 @@ class IMP implements MouseListener {
         JMenuItem rotate = new JMenuItem("Rotate Image"); // Dropdown menu item
         JMenuItem greyScale = new JMenuItem("Grey Scale"); // Dropdown menu item
         JMenuItem blur = new JMenuItem("Blur Image"); // Dropdown menu item
+        JMenuItem edgeDetection = new JMenuItem("Edge Detection"); // Dropdown menu item
+        JMenuItem histogram = new JMenuItem("Histogram"); // Dropdown menu item
+        JMenuItem colorDetection = new JMenuItem("Color Detection"); // Dropdown menu item
 
 
         firstItem.addActionListener(new ActionListener() {
@@ -149,12 +152,32 @@ class IMP implements MouseListener {
                 blur();  // Calls method to rotate the image.
             }
         });
+//        edgeDetection.addActionListener(new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent evt) {
+//                edgeDetection();  // Calls method to rotate the image.
+//            }
+//        });
+        histogram.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                histogram();  // Calls method to rotate the image.
+            }
+        });
+        histogram.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                colorDetection();  // Calls method to rotate the image.
+            }
+        });
 
         fun.add(firstItem);
         fun.add(rotate);
         fun.add(greyScale);
         fun.add(blur);
-
+        //  fun.add(edgeDetection);
+        fun.add(histogram);
+        fun.add(colorDetection);
 
         return fun;
 
@@ -202,7 +225,6 @@ class IMP implements MouseListener {
         turnTwoDimensional();
         mp.removeAll();
         mp.add(label);
-
         mp.revalidate();
     }
 
@@ -334,7 +356,7 @@ class IMP implements MouseListener {
                 int rgbArray[] = new int[4]; //get three ints for R, G and B
                 rgbArray = getPixelArray(picture[i][j]);
                 int lumos_value = checkValues((rgbArray[1] * 0.21) + (rgbArray[2] * 0.72) + (rgbArray[3] * 0.07));  // Luminosity formula for current pixel.
-                for (int count = 1; count < rgbArray.length; count++){
+                for (int count = 1; count < rgbArray.length; count++) {
                     rgbArray[count] = lumos_value;  //Sets r,g,b to luminosity value
                 }
                 picture[i][j] = getPixels(rgbArray);    // sets  pixel to luminosity value.
@@ -343,23 +365,47 @@ class IMP implements MouseListener {
     }
 
     private void blur() {
-        int temp[][] = new int[height][width];
-        int boundryAdjust[] = {-1, 0, 1}; // array to loop through for surrounding values.
-        int surrounding_count = (boundryAdjust.length * 2) - 1;
+        int[][] temp = picture;
+        int boundryAdjust[] = {-1, 0, 1}; // array to loop through for surrounding values
         greyScale(); // Sets picture to grey scale
-        for (int i = 0; i < height; i++) {
+        for (int i = 0; i < height; i++)
             for (int j = 0; j < width; j++) {
-                int average_values = 0;
-                for (int h = 0; h < boundryAdjust.length; h++) {
+                int[] rgbArray = new int[4];    // array to add up rgb values to use for average in a later function.
+                int counter = 0;    // Counter to divide by for average.
+                for (int h = 0; h < boundryAdjust.length; h++)  // loops through the boundryAdjust array.  this grabs the surrounding locations in the Array.
                     for (int w = 0; w < boundryAdjust.length; w++) {
-                        if (h != 0 && w != 0) { // Skips value we are surrounding
-                            average_values += picture[i + h][j + w];
+                        if (i + boundryAdjust[h] >= 0 && i + boundryAdjust[h] < height && j + boundryAdjust[w] >= 0 && j + boundryAdjust[w] < width) {  //Long if statement to prevent array out of bounds.
+                            counter++;
+                            int[] pixelValues = getPixelArray(picture[i + boundryAdjust[h]][j + boundryAdjust[w]]); //gets the pixel array of the current surrounding pixel location.
+                            for (int count = 0; count < pixelValues.length; count++) {
+                                rgbArray[count] += pixelValues[count];  // adds value to temp rgb array
+                            }
                         }
+
                     }
+                for (int count = 0; count < rgbArray.length; count++) {
+                    rgbArray[count] /= counter; // gets the average of the argb value.
                 }
-                temp[i][j] = average_values / surrounding_count;
+                temp[i][j] = getPixels(rgbArray);   // Adds the pixel of the blurred image in a temp array.
             }
-        }
+        picture = temp; 
+        resetPicture();
+    }
+
+    private void histogram() {
+
+        resetPicture();
+
+    }
+
+    private void colorDetection() {
+        int[][] temp = picture;
+        int boundryAdjust[] = {-1, 0, 1}; // array to loop through for surrounding values
+        greyScale(); // Sets picture to grey scale
+        for (int i = 1; i < height - 2; i++)
+            for (int j = 1; j < width - 2; j++) {
+
+            }
         picture = temp;
         resetPicture();
     }
