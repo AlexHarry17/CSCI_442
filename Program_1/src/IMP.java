@@ -163,7 +163,7 @@ class IMP implements MouseListener {
                 histogram();  // Calls method to rotate the image.
             }
         });
-        histogram.addActionListener(new ActionListener() {
+        colorDetection.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 colorDetection();  // Calls method to rotate the image.
@@ -387,7 +387,7 @@ class IMP implements MouseListener {
 
                     }
                 for (int count = 0; count < rgbArray.length; count++) {
-                    rgbArray[count] /= counter; // gets the average of the argb value.
+                    rgbArray[count] = checkValues(rgbArray[count] / counter); // gets the average of the argb value.
                 }
                 temp[i][j] = getPixels(rgbArray);   // Adds the pixel of the blurred image in a temp array.
             }
@@ -402,14 +402,19 @@ class IMP implements MouseListener {
     }
 
     private void colorDetection() {
-        int[][] temp = picture;
-        int boundryAdjust[] = {-1, 0, 1}; // array to loop through for surrounding values
-        greyScale(); // Sets picture to grey scale
-        for (int i = 1; i < height - 2; i++)
-            for (int j = 1; j < width - 2; j++) {
+        for (int i = 0; i < height; i++)
+            for (int j = 0; j < width; j++) {
+                int rgbArray[] = getPixelArray(picture[i][j]);
+                //get three ints for R, G and B
+                if (rgbArray[1] != 255 && rgbArray[3] != 0){ // Orange has r =255 and b = 0
+                    for (int count = 1; count < rgbArray.length; count++) {
+                        rgbArray[count] = 0;   // Sets value to black.
+                        picture[i][j] = getPixels(rgbArray);
 
+                    }
+                }
+                //take three ints for R, G, B and put them back into a single int
             }
-        picture = temp;
         resetPicture();
     }
 
