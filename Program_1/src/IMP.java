@@ -228,13 +228,10 @@ class IMP implements MouseListener {
             for (int j = 0; j < width; j++)
                 pixels[i * width + j] = picture[i][j];
         Image img2 = toolkit.createImage(new MemoryImageSource(width, height, pixels, 0, width));
-
         JLabel label2 = new JLabel(new ImageIcon(img2));
         mp.removeAll();
         mp.add(label2);
-
         mp.revalidate();
-
     }
 
     /*
@@ -303,11 +300,13 @@ class IMP implements MouseListener {
             }
         int temp_picture[][] = new int[width][height];  // temp array to not affect the original picture.
         counter = 0;
-        for (int i = 0; i < height; i++){
+        for (int i = 0; i < height; i++) {
             for (int j = width - 1; j >= 0; j--) {
                 temp_picture[j][i] = temp[counter]; // Loops through, rotating the picture into the temp array holder.
                 counter++;
-            }}
+            }
+        }
+        mp.repaint();
         picture = temp_picture; // sets picture to the temp variable.
         int heightTemp = height;
         height = width; // Changes the height of the picture variable.
