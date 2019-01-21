@@ -405,18 +405,23 @@ class IMP implements MouseListener {
         for (int i = 0; i < height; i++)
             for (int j = 0; j < width; j++) {
                 int rgbArray[] = getPixelArray(picture[i][j]);
+                int color;
                 //get three ints for R, G and B
-                if (rgbArray[1] != 255 && rgbArray[3] != 0){ // Orange has r =255 and b = 0
-                    for (int count = 1; count < rgbArray.length; count++) {
-                        rgbArray[count] = 0;   // Sets value to black.
-                        picture[i][j] = getPixels(rgbArray);
+                if (rgbArray[1] == 255 && rgbArray[2] < 216 && rgbArray[2] > 68 && rgbArray[3] < 81) { // Orange has r =255 and b = 0
+                    color = 255;
 
-                    }
+                } else {
+                    color = 0;
+                    //take three ints for R, G, B and put them back into a single int
                 }
-                //take three ints for R, G, B and put them back into a single int
+                for (int count = 1; count < rgbArray.length; count++) {
+                    rgbArray[count] = color;   // Sets value to white.
+                }
+                picture[i][j] = getPixels(rgbArray);
             }
         resetPicture();
     }
+
 
     private int checkValues(double rgb_value) { //Corrects value if greater than 255 or less than 0
         if (rgb_value > 255.0) {
