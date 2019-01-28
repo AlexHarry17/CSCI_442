@@ -472,43 +472,54 @@ class IMP implements MouseListener {
         for (int x = 0; x < height; x++) {
             for (int y = 0; y < width; y++) {
                 int[] rgbArray = getPixelArray(picture[x][y]);
-                red[rgbArray[1]] += 1;
-                green[rgbArray[2]] += 1;
-                blue[rgbArray[3]] += 1;
+                red[normalize(cdfRed)] += 1;
+                cdfRed = (cdfRed + rgbArray[1]);
+                green[normalize(cdfgreen)] += 1;
+                cdfgreen= (cdfgreen + rgbArray[2]);
+                blue[normalize(cdfblue)] += 1;
+                cdfblue = (cdfblue + rgbArray[3]);
             }
         }
 
-        for (int i = 0; i < red.length; i++) { // sets cdf
-            red[i] = (cdfRed + red[i]);
-            cdfRed = red[i];
-            redNorm[normalize(red[i])] += 1;
-            green[i] = (cdfgreen + green[i]);
-            cdfgreen = green[i];
-            greenNorm[normalize(green[i])] += 1;
-            blue[i] = (cdfblue + blue[i]);
-            cdfblue = blue[i];
-            blueNorm[normalize(blue[i])] += 1;
-        }
-        for (int i = 0; i < height; i++) { // sets cdf
-            System.out.println(i + "value : " + greenNorm[i]);
+        int sum = 0;
+        for (int i = 0; i < blue.length; i++){
+        System.out.println("i: "+ i +"blue: " + blue[i] + "red " + red[i]);
 
         }
+        System.out.println("Initial blue :" + sum);
 
+//        for (int i = 0; i < red.length; i++) { // sets cdf
+//            red[i] = (cdfRed + red[i]);
+//            cdfRed = red[i];
+//            redNorm[normalize(red[i])] += 1;
+//            green[i] = (cdfgreen + green[i]);
+//            cdfgreen = green[i];
+//            greenNorm[normalize(green[i])] += 1;
+//            blue[i] = (cdfblue + blue[i]);
+//            cdfblue = blue[i];
+//            blueNorm[normalize(blue[i])] += 1;
+//        }
+//        for (int i = 0; i < height; i++) { // sets cdf
+//            System.out.println(i + "value : " + blueNorm[i]);
+//
+//        }
+        sum = 0;
+        for (int i = 0; i < blue.length; i++){
+            sum += blueNorm[i];
+        }
+        System.out.println("last blue :" + sum);
 
-        setUpHistoJframe(redNorm, greenNorm, blueNorm);
+        setUpHistoJframe(red, green, blue);
     }
 
 
     private int normalize(int cdf) {
-        int cdfMin = 1;
-        int l = 256;
+        double cdfMin = 1.0;
+        double l = 256.0;
+//        double test = ((cdf-cdfMin)/((height*width)-1)) * (l -1);
+        return checkValues(Math.round(((cdf-cdfMin)/((height*width)-cdfMin)) * (l -1)));
 
-        cdf = Math.round(((cdf - cdfMin) * (l - 2)) / ((height * width) - cdfMin) + 1);
-        if (cdf < 0) {
-            cdf = 0;
         }
-        return cdf;
-    }
 
     private void setUpHistoJframe(int[] red, int[] green, int[] blue) {
         // Provided by Hunter.
