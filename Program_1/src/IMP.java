@@ -18,8 +18,6 @@ import java.util.prefs.Preferences;
 /*TODO        Use the values in the histogram to equalize the image:
         Use the mapping function to normalize the distribution evenly
         https://en.wikipedia.org/wiki/Histogram_equalization */
-/*TODO        Track a colored object.....orange is easiest. Result is a binary image that is black except where the colored object is located.
-        See notes below (I'll also cover this next Wednesday) */
 
 
 class IMP implements MouseListener {
@@ -151,19 +149,19 @@ class IMP implements MouseListener {
                 blur();  // Calls method to rotate the image.
             }
         });
-//        edgeDetection.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent evt) {
-//                edgeDetection();  // Calls method to rotate the image.
-//            }
-//        });
+        edgeDetection.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                edgeDetection();  // Calls method to rotate the image.
+            }
+        });
         histogram.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 histogram();  // Calls method to rotate the image.
             }
         });
-        histogram.addActionListener(new ActionListener() {
+        colorDetection.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 colorDetection();  // Calls method to rotate the image.
@@ -174,7 +172,7 @@ class IMP implements MouseListener {
         fun.add(rotate);
         fun.add(greyScale);
         fun.add(blur);
-        //  fun.add(edgeDetection);
+        fun.add(edgeDetection);
         fun.add(histogram);
         fun.add(colorDetection);
         return fun;
@@ -186,6 +184,7 @@ class IMP implements MouseListener {
      * You don't need to worry about this method.
      */
     private void handleOpen() {
+
         img = new ImageIcon();
         JFileChooser chooser = new JFileChooser();
         Preferences pref = Preferences.userNodeForPackage(IMP.class);
@@ -226,6 +225,7 @@ class IMP implements MouseListener {
         mp.removeAll();
         mp.add(label);
         mp.revalidate();
+        reset();
     }
 
     /*
@@ -387,13 +387,48 @@ class IMP implements MouseListener {
 
                     }
                 for (int count = 0; count < rgbArray.length; count++) {
-                    rgbArray[count] /= counter; // gets the average of the argb value.
+                    rgbArray[count] = checkValues(rgbArray[count] / counter); // gets the average of the argb value.
                 }
                 temp[i][j] = getPixels(rgbArray);   // Adds the pixel of the blurred image in a temp array.
             }
         picture = temp;
         resetPicture();
     }
+
+    private void edgeDetection() {
+        int[][] temp = picture;
+        int boundryAdjust[] = {-1, 0, 1}; // array to loop through for surrounding values
+        greyScale(); // Sets picture to grey scale
+        for (int i = 0; i < height; i++)
+            for (int j = 0; j < width; j++) {
+                int[] rgbArray = getPixelArray(picture[i][j]);// array to add up rgb values to use for average in a later function.
+                int rgbVal = picture[i][j] * 8; // Multiplies current pixel by surrounding value.
+                for (int h = 0; h < boundryAdjust.length; h++)  // loops through the boundryAdjust array.  this grabs the surrounding locations in the Array.
+                    for (int w = 0; w < boundryAdjust.length; w++) {
+                        if (i + boundryAdjust[h] >= 0 && i + boundryAdjust[h] < height && j + boundryAdjust[w] >= 0 && j + boundryAdjust[w] < width) {  //Long if statement to prevent array out of bounds.
+                            int pixelValues = picture[i + boundryAdjust[h]][j + boundryAdjust[w]]; //gets the pixel array of the current surrounding pixel location.
+                            rgbVal += pixelValues * -1; //Adds surrounding pixel value to current pixel location.
+                        }
+                    }
+                // If statement to set values to black or white.
+                if (rgbVal > 255) {
+                    rgbArray[0] = 255;
+                    rgbArray[1] = 255;
+                    rgbArray[2] = 255;
+                    rgbArray[3] = 255;
+
+                } else {
+                    rgbArray[0] = 0;
+                    rgbArray[1] = 0;
+                    rgbArray[2] = 0;
+                    rgbArray[3] = 0;
+                }
+                temp[i][j] = getPixels(rgbArray);   // Adds the pixel of the blurred image in a temp array.
+            }
+        picture = temp;
+        resetPicture();
+    }
+
 
     private void histogram() {
 
@@ -402,16 +437,26 @@ class IMP implements MouseListener {
     }
 
     private void colorDetection() {
-        int[][] temp = picture;
-        int boundryAdjust[] = {-1, 0, 1}; // array to loop through for surrounding values
-        greyScale(); // Sets picture to grey scale
-        for (int i = 1; i < height - 2; i++)
-            for (int j = 1; j < width - 2; j++) {
+        for (int i = 0; i < height; i++)
+            for (int j = 0; j < width; j++) {
+                int rgbArray[] = getPixelArray(picture[i][j]);
+                int color;
+                //get three ints for R, G and B
+                if (rgbArray[1] > 208 && rgbArray[2] < 140 && rgbArray[2] > 50 && rgbArray[3] < 100) { // Orange has r =255 and b = 0
+                    color = 255;
 
+                } else {
+                    color = 0;
+                    //take three ints for R, G, B and put them back into a single int
+                }
+                for (int count = 1; count < rgbArray.length; count++) {
+                    rgbArray[count] = color;   // Sets value to white.
+                }
+                picture[i][j] = getPixels(rgbArray);
             }
-        picture = temp;
         resetPicture();
     }
+
 
     private int checkValues(double rgb_value) { //Corrects value if greater than 255 or less than 0
         if (rgb_value > 255.0) {
