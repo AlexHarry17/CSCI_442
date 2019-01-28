@@ -184,6 +184,7 @@ class IMP implements MouseListener {
      * You don't need to worry about this method.
      */
     private void handleOpen() {
+
         img = new ImageIcon();
         JFileChooser chooser = new JFileChooser();
         Preferences pref = Preferences.userNodeForPackage(IMP.class);
@@ -224,6 +225,7 @@ class IMP implements MouseListener {
         mp.removeAll();
         mp.add(label);
         mp.revalidate();
+        reset();
     }
 
     /*
@@ -400,32 +402,17 @@ class IMP implements MouseListener {
         for (int i = 0; i < height; i++)
             for (int j = 0; j < width; j++) {
                 int[] rgbArray = getPixelArray(picture[i][j]);// array to add up rgb values to use for average in a later function.
-
-                int tempVal = 0;
-
-                int counter = 0;    // Counter to divide by for average.
-                int rgbVal = (rgbArray[3] * 8);
+                int rgbVal = picture[i][j] * 8; // Multiplies current pixel by surrounding value.
                 for (int h = 0; h < boundryAdjust.length; h++)  // loops through the boundryAdjust array.  this grabs the surrounding locations in the Array.
                     for (int w = 0; w < boundryAdjust.length; w++) {
                         if (i + boundryAdjust[h] >= 0 && i + boundryAdjust[h] < height && j + boundryAdjust[w] >= 0 && j + boundryAdjust[w] < width) {  //Long if statement to prevent array out of bounds.
-                            counter++;
-                            int[] pixelValues = getPixelArray(picture[i + boundryAdjust[h]][j + boundryAdjust[w]]); //gets the pixel array of the current surrounding pixel location.
-//                            for (int count = 1; count < pixelValues.length; count++) {
-//                                tempVal += (pixelValues[count] * -1);  // adds value to temp rgb array
-//                            }
-                            tempVal += pixelValues[3] * -1;
+                            int pixelValues = picture[i + boundryAdjust[h]][j + boundryAdjust[w]]; //gets the pixel array of the current surrounding pixel location.
+                            rgbVal += pixelValues * -1; //Adds surrounding pixel value to current pixel location.
                         }
-
                     }
-                int[] picArray = getPixelArray(temp[i][j]);
-                int tempValue = 0;
-                int picValue = 0;
-//                for (int count = 1; count < rgbArray.length; count++) {
-//                    tempValue += (rgbArray[count] * -1); // gets the average of the argb value.
-//                    picValue += picArray[count];
-//                }
-                int value = (rgbVal) + tempVal;
-                if (value > 255) {
+
+                // If statement to set values to black or white.
+                if (rgbVal > 255) {
                     rgbArray[0] = 255;
                     rgbArray[1] = 255;
                     rgbArray[2] = 255;
