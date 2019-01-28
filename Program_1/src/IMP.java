@@ -9,15 +9,8 @@ import java.awt.event.*;
 import java.io.File;
 import java.awt.image.PixelGrabber;
 import java.awt.image.MemoryImageSource;
+import java.util.Arrays;
 import java.util.prefs.Preferences;
-
-/*TODO  Turn a color image into a grayscale image first and then do a minimum of 3x3 mask to do edge detection. 5x5 will work better and be worth more.
-        See notes below */
-/*TODO        Show a histogram of the colors in a separate window
-        See notes below */
-/*TODO        Use the values in the histogram to equalize the image:
-        Use the mapping function to normalize the distribution evenly
-        https://en.wikipedia.org/wiki/Histogram_equalization */
 
 
 class IMP implements MouseListener {
@@ -93,12 +86,6 @@ class IMP implements MouseListener {
         butPanel.setBackground(Color.black);
         start = new JButton("start");
         start.setEnabled(false);
-        start.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                removeRed();
-            }
-        });
         butPanel.add(start);
         frame.getContentPane().add(butPanel, BorderLayout.SOUTH);
         frame.setJMenuBar(bar);
@@ -119,6 +106,8 @@ class IMP implements MouseListener {
         JMenuItem blur = new JMenuItem("Blur Image"); // Dropdown menu item
         JMenuItem edgeDetection = new JMenuItem("Edge Detection"); // Dropdown menu item
         JMenuItem histogram = new JMenuItem("Histogram"); // Dropdown menu item
+        JMenuItem normalizeHistogram = new JMenuItem("Normalized Histogram"); // Dropdown menu item
+
         JMenuItem colorDetection = new JMenuItem("Color Detection"); // Dropdown menu item
 
 
@@ -161,6 +150,12 @@ class IMP implements MouseListener {
                 histogram();  // Calls method to rotate the image.
             }
         });
+        normalizeHistogram.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                normalizeHistogram();  // Calls method to rotate the image.
+            }
+        });
         colorDetection.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -174,6 +169,7 @@ class IMP implements MouseListener {
         fun.add(blur);
         fun.add(edgeDetection);
         fun.add(histogram);
+        fun.add(normalizeHistogram);
         fun.add(colorDetection);
         return fun;
 
@@ -429,12 +425,124 @@ class IMP implements MouseListener {
         resetPicture();
     }
 
-
+    /*TODO        Show a histogram of the colors in a separate window
+            See notes below */
+/*TODO        Use the values in the histogram to equalize the image:
+        Use the mapping function to normalize the distribution evenly
+        https://en.wikipedia.org/wiki/Histogram_equalization */
     private void histogram() {
+        int[] red = new int[256];
+        int[] green = new int[256];
+        int[] blue = new int[256];
+        for (int i = 0; i < 256; i++) {  // Initializes array values
+            red[i] = 0;
+            green[i] = 0;
+            blue[i] = 0;
+        }
+        for (int x = 0; x < height; x++) { // Gets pixel values and adds 1 to each count.
+            for (int y = 0; y < width; y++) {
+                int[] rgbArray = getPixelArray(picture[x][y]);
+                red[rgbArray[1]] += 1;
+                green[rgbArray[2]] += 1;
+                blue[rgbArray[3]] += 1;
 
-        resetPicture();
-
+            }
+        }
+        setUpHistoJframe(red, green, blue); // runs method for jframe to draw histogram
     }
+
+    private void normalizeHistogram() {
+        int cdfRed = 0;
+        int cdfgreen = 0;
+        int cdfblue = 0;
+        int[] red = new int[256];
+        int[] green = new int[256];
+        int[] blue = new int[256];
+        int[] redNorm = new int[256];
+        int[] greenNorm = new int[256];
+        int[] blueNorm = new int[256];
+        for (int i = 0; i < 256; i++) {  // Initializes the arrays.
+            red[i] = 0;
+            green[i] = 0;
+            blue[i] = 0;
+            redNorm[i] = 0;
+            greenNorm[i] = 0;
+            blueNorm[i] = 0;
+        }
+        for (int x = 0; x < height; x++) {
+            for (int y = 0; y < width; y++) {
+                int[] rgbArray = getPixelArray(picture[x][y]);
+                red[rgbArray[1]] += 1;
+                green[rgbArray[2]] += 1;
+                blue[rgbArray[3]] += 1;
+            }
+        }
+
+        for (int i = 0; i < red.length; i++) { // sets cdf
+            red[i] = (cdfRed + red[i]);
+            cdfRed = red[i];
+            redNorm[normalize(red[i])] += 1;
+            green[i] = (cdfgreen + green[i]);
+            cdfgreen = green[i];
+            greenNorm[normalize(green[i])] += 1;
+            blue[i] = (cdfblue + blue[i]);
+            cdfblue = blue[i];
+            blueNorm[normalize(blue[i])] += 1;
+        }
+        for (int i = 0; i < height; i++) { // sets cdf
+            System.out.println(i + "value : " + greenNorm[i]);
+
+        }
+
+
+        setUpHistoJframe(redNorm, greenNorm, blueNorm);
+    }
+
+
+    private int normalize(int cdf) {
+        int cdfMin = 1;
+        int l = 256;
+
+        cdf = Math.round(((cdf - cdfMin) * (l - 2)) / ((height * width) - cdfMin) + 1);
+        if (cdf < 0) {
+            cdf = 0;
+        }
+        return cdf;
+    }
+
+    private void setUpHistoJframe(int[] red, int[] green, int[] blue) {
+        // Provided by Hunter.
+        int histoHeight = 600;
+        JFrame redFrame = new JFrame("Red");
+        redFrame.setSize(305, histoHeight);
+        redFrame.setLocation(800, 0);
+        JFrame greenFrame = new JFrame("Green");
+        greenFrame.setSize(305, histoHeight);
+        greenFrame.setLocation(1106, 0);
+        JFrame blueFrame = new JFrame("blue");
+        blueFrame.setSize(305, histoHeight);
+        blueFrame.setLocation(1412, 0);
+        MyPanel redPanel = new MyPanel(red, "red");
+        MyPanel greenPanel = new MyPanel(green, "green");
+        MyPanel bluePanel = new MyPanel(blue, "blue");
+        redFrame.getContentPane().add(redPanel, BorderLayout.CENTER);
+        redFrame.setVisible(true);
+        greenFrame.getContentPane().add(greenPanel, BorderLayout.CENTER);
+        greenFrame.setVisible(true);
+        blueFrame.getContentPane().add(bluePanel, BorderLayout.CENTER);
+        blueFrame.setVisible(true);
+        start.setEnabled(true);
+        start.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {  // Draws histograms on click
+                redPanel.drawing(histoHeight);
+                greenPanel.drawing(histoHeight);
+                bluePanel.drawing(histoHeight);
+                start.setEnabled(false);    // Disables button after histogram is drawn.
+            }
+        });
+    }
+
 
     private void colorDetection() {
         for (int i = 0; i < height; i++)
