@@ -410,7 +410,6 @@ class IMP implements MouseListener {
                             rgbVal += pixelValues * -1; //Adds surrounding pixel value to current pixel location.
                         }
                     }
-
                 // If statement to set values to black or white.
                 if (rgbVal > 255) {
                     rgbArray[0] = 255;
