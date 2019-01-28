@@ -9,7 +9,6 @@ import java.awt.event.*;
 import java.io.File;
 import java.awt.image.PixelGrabber;
 import java.awt.image.MemoryImageSource;
-import java.util.Arrays;
 import java.util.prefs.Preferences;
 
 
@@ -425,8 +424,6 @@ class IMP implements MouseListener {
         resetPicture();
     }
 
-    /*TODO        Show a histogram of the colors in a separate window
-            See notes below */
 /*TODO        Use the values in the histogram to equalize the image:
         Use the mapping function to normalize the distribution evenly
         https://en.wikipedia.org/wiki/Histogram_equalization */
