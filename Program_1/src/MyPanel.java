@@ -47,7 +47,7 @@ public class MyPanel extends JPanel {
         repaint();
         gc.setColor(colorMap.get(currentColor));
         for (int i = 0; i < color.length; i++) {
-            gc.fill3DRect(i, height - (color[i]/2), 305/256, color[i]/2, true);
+            gc.fill3DRect(i, height - (color[i]/2), 1, color[i]/2, true);
         }
     }
 
