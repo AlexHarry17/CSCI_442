@@ -454,7 +454,6 @@ class IMP implements MouseListener {
                 red[rgbArray[1]] += 1;
                 green[rgbArray[2]] += 1;
                 blue[rgbArray[3]] += 1;
-
             }
         }
         for (int i = 0; i < red.length; i++) {
@@ -477,7 +476,6 @@ class IMP implements MouseListener {
     }
 
     private void equalizeImage() {  // method to equalize the image
-
         int redCdf = 0;
         int greenCdf = 0;
         int blueCdf = 0;
@@ -504,9 +502,11 @@ class IMP implements MouseListener {
         for (int x = 0; x < height; x++) { // Gets pixel values and adds 1 to each count.
             for (int y = 0; y < width; y++) {
                 rgbArray = getPixelArray(picture[x][y]);
-                redMap.putIfAbsent(rgbArray[1], 0); // sets pixel to 0 if absent
-                greenMap.putIfAbsent(rgbArray[2], 0);
-                blueMap.put(rgbArray[3], 0);
+                for (int i = 0; i < 256; i++) {
+                    redMap.putIfAbsent(i, 0); // sets pixel to 0 if absent
+                    greenMap.putIfAbsent(i, 0);
+                    blueMap.putIfAbsent(i, 0);
+                }
                 rgbArray[1] = redMap.get(rgbArray[1]);  // sets rgb array to mapped values.
                 rgbArray[2] = greenMap.get(rgbArray[2]);
                 rgbArray[3] = blueMap.get(rgbArray[3]);
