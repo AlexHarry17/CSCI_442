@@ -414,11 +414,6 @@ class IMP implements MouseListener {
         int[] red = new int[256];
         int[] green = new int[256];
         int[] blue = new int[256];
-        for (int i = 0; i < 256; i++) {  // Initializes array values
-            red[i] = 0;
-            green[i] = 0;
-            blue[i] = 0;
-        }
         for (int x = 0; x < height; x++) { // Gets pixel values and adds 1 to each count.
             for (int y = 0; y < width; y++) {
                 int[] rgbArray = getPixelArray(picture[x][y]);
@@ -431,9 +426,7 @@ class IMP implements MouseListener {
     }
 
     private void normalizeHistogram() {
-        int cdfRed = 0;
-        int cdfgreen = 0;
-        int cdfblue = 0;
+        // Arrays needed for the functions.
         int[] red = new int[256];
         int[] green = new int[256];
         int[] blue = new int[256];
@@ -443,27 +436,19 @@ class IMP implements MouseListener {
         int[] redCdf = new int[256];
         int[] greenCdf = new int[256];
         int[] blueCdf = new int[256];
-        for (int i = 0; i < 256; i++) {  // Initializes the arrays.
-            red[i] = 0;
-            green[i] = 0;
-            blue[i] = 0;
-            redNorm[i] = 0;
-            greenNorm[i] = 0;
-            blueNorm[i] = 0;
-            redCdf[i] = 0;
-            greenCdf[i] = 0;
-            blueCdf[i] = 0;
-        }
+
         for (int x = 0; x < height; x++) { // Gets pixel values and adds 1 to each count.
             for (int y = 0; y < width; y++) {
                 int[] rgbArray = getPixelArray(picture[x][y]);
                 red[rgbArray[1]] += 1;
                 green[rgbArray[2]] += 1;
                 blue[rgbArray[3]] += 1;
+
             }
         }
         for (int i = 0; i < red.length; i++){
             if (i > 0){
+                //gets the Cdf value for each RGB value.
                 redCdf[i] = red[i] + redCdf[i -1];
                 greenCdf[i] = green[i] + greenCdf[i -1];
                 blueCdf[i] = blue[i] + blueCdf[i -1];
@@ -473,53 +458,26 @@ class IMP implements MouseListener {
                 greenCdf[i] = green[i];
                 blueCdf[i] = blue[i];
             }
+            //Calls the normalize function and sets the value equal to the count of the RGB Value.
+            redNorm[normalize(redCdf[i])] = red[i];
+            greenNorm[normalize(greenCdf[i])] = green[i];
+            blueNorm[normalize(blueCdf[i])] = blue[i];
         }
-//        for (int x = 0; x < height; x++) {
-//            for (int y = 0; y < width; y++) {
-//                int[] rgbArray = getPixelArray(picture[x][y]);
-//                red[normalize(cdfRed)] += 1;
-//                cdfRed = (cdfRed + rgbArray[1]);
-//                green[normalize(cdfgreen)] += 1;
-//                cdfgreen = (cdfgreen + rgbArray[2]);
-//                blue[normalize(cdfblue)] += 1;
-//                cdfblue = (cdfblue + rgbArray[3]);
-//            }
-//        }
-        int sum = 0;
-
-        for (int i = 0; i < redCdf.length; i++) { // sets cdf
-            redNorm[normalize(redCdf[i])] += 1;
-            greenNorm[normalize(greenCdf[i])] += 1;
-            blueNorm[normalize(blueCdf[i])] += 1;
-            System.out.println("Initial blue :" + blue[i] + " Blue After : " + blueNorm[i]);
-
-        }
-//        for (int i = 0; i < height; i++) { // sets cdf        System.out.println(st);
-
-//            System.out.println(i + "value : " + blueNorm[i]);
-//
-//        }
-        sum = 0;
-        for (int i = 0; i < blue.length; i++) {
-            sum += blueNorm[i];
-        }
-        System.out.println("last blue :" + sum);
-
-        setUpHistoJframe(redNorm, greenNorm, blueNorm);
+                setUpHistoJframe(redNorm, greenNorm, blueNorm);
     }
 
 
-    private int normalize(int cdf) {
-        double cdfMin = 1.0;
-        double l = 256.0;
+    private int normalize(int cdf) {    // Function to normalize the histogram.
+        double cdfMin = 1.0;    // CDF min value
+        double l = 256.0; // Length
 //        int test = (int) (((cdf-cdfMin)/((64)-1)) * (l -1));
 //        return checkValues(Math.round(((cdf - cdfMin) / ((height * width) - cdfMin)) * (l - 1)));
-        return checkValues(Math.round((((cdf-cdfMin)/((height * width)-1)) * (l -1))));
+        return checkValues(Math.round((((cdf-cdfMin)/((height * width)-1)) * (l -1)))); // Runs function, rounds, and calls checkValues() to verify that number is in RGB Range.
 
 
     }
 
-    private void setUpHistoJframe(int[] red, int[] green, int[] blue) {
+    private void setUpHistoJframe(int[] red, int[] green, int[] blue) { // Method that sets up the jFrame for the Histogram.
         // Provided by Hunter.
         int histoHeight = 600;
         JFrame redFrame = new JFrame("Red");
