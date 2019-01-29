@@ -106,7 +106,7 @@ class IMP implements MouseListener {
         JMenuItem edgeDetection = new JMenuItem("Edge Detection"); // Dropdown menu item
         JMenuItem histogram = new JMenuItem("Histogram"); // Dropdown menu item
         JMenuItem normalizeHistogram = new JMenuItem("Normalized Histogram"); // Dropdown menu item
-
+        JMenuItem equalizeImage = new JMenuItem("Equalize Image"); // Dropdown menu item
         JMenuItem colorDetection = new JMenuItem("Color Detection"); // Dropdown menu item
 
 
@@ -155,6 +155,12 @@ class IMP implements MouseListener {
                 normalizeHistogram();  // Calls method to rotate the image.
             }
         });
+        equalizeImage.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                equalizeImage();  // Calls method to rotate the image.
+            }
+        });
         colorDetection.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -169,6 +175,7 @@ class IMP implements MouseListener {
         fun.add(edgeDetection);
         fun.add(histogram);
         fun.add(normalizeHistogram);
+        fun.add(equalizeImage);
         fun.add(colorDetection);
         return fun;
 
@@ -446,14 +453,13 @@ class IMP implements MouseListener {
 
             }
         }
-        for (int i = 0; i < red.length; i++){
-            if (i > 0){
+        for (int i = 0; i < red.length; i++) {
+            if (i > 0) {
                 //gets the Cdf value for each RGB value.
-                redCdf[i] = red[i] + redCdf[i -1];
-                greenCdf[i] = green[i] + greenCdf[i -1];
-                blueCdf[i] = blue[i] + blueCdf[i -1];
-            }
-            else {
+                redCdf[i] = red[i] + redCdf[i - 1];
+                greenCdf[i] = green[i] + greenCdf[i - 1];
+                blueCdf[i] = blue[i] + blueCdf[i - 1];
+            } else {
                 redCdf[i] = red[i];
                 greenCdf[i] = green[i];
                 blueCdf[i] = blue[i];
@@ -463,8 +469,66 @@ class IMP implements MouseListener {
             greenNorm[normalize(greenCdf[i])] = green[i];
             blueNorm[normalize(blueCdf[i])] = blue[i];
         }
-                setUpHistoJframe(redNorm, greenNorm, blueNorm);
+        setUpHistoJframe(redNorm, greenNorm, blueNorm);
     }
+
+    private void equalizeImage() {
+        // Arrays needed for the functions.
+        greyScale();
+        int[] red = new int[256];
+        int[] green = new int[256];
+        int[] blue = new int[256];
+        int[] redNorm = new int[256];
+        int[] greenNorm = new int[256];
+        int[] blueNorm = new int[256];
+        int[] redCdf = new int[256];
+        int[] greenCdf = new int[256];
+        int[] blueCdf = new int[256];
+
+        for (int x = 0; x < height; x++) { // Gets pixel values and adds 1 to each count.
+            for (int y = 0; y < width; y++) {
+                int[] rgbArray = getPixelArray(picture[x][y]);
+                red[rgbArray[1]] += 1;
+                green[rgbArray[2]] += 1;
+                blue[rgbArray[3]] += 1;
+
+            }
+        }
+        for (int i = 0; i < red.length; i++) {
+            if (i > 0) {
+                //gets the Cdf value for each RGB value.
+                redCdf[i] = red[i] + redCdf[i - 1];
+                greenCdf[i] = green[i] + greenCdf[i - 1];
+                blueCdf[i] = blue[i] + blueCdf[i - 1];
+            } else {
+                redCdf[i] = red[i];
+                greenCdf[i] = green[i];
+                blueCdf[i] = blue[i];
+            }
+            //Calls the normalize function and sets the value equal to the count of the RGB Value.
+            redNorm[normalize(redCdf[i])] = red[i];
+            red[i] = redNorm[normalize(redCdf[i])];
+            greenNorm[normalize(greenCdf[i])] = green[i];
+            green[i] = greenNorm[normalize(greenCdf[i])];
+            blueNorm[normalize(blueCdf[i])] = blue[i];
+            blue[i] = blueNorm[normalize(blueCdf[i])];
+
+        }
+        int[][] temp = picture;
+        for (int x = 0; x < height; x++) { // Gets pixel values and adds 1 to each count.
+            for (int y = 0; y < width; y++) {
+                int[] rgbArray = getPixelArray(picture[x][y]);
+                rgbArray[1] = blue[rgbArray[1]];
+                rgbArray[2] = green[rgbArray[2]];
+                rgbArray[3] = blue[rgbArray[3]];
+            temp[x][y] =  getPixels(rgbArray);
+            }
+        }
+    picture = temp;
+        resetPicture();
+    }
+
+
 
 
     private int normalize(int cdf) {    // Function to normalize the histogram.
@@ -472,7 +536,7 @@ class IMP implements MouseListener {
         double l = 256.0; // Length
 //        int test = (int) (((cdf-cdfMin)/((64)-1)) * (l -1));
 //        return checkValues(Math.round(((cdf - cdfMin) / ((height * width) - cdfMin)) * (l - 1)));
-        return checkValues(Math.round((((cdf-cdfMin)/((height * width)-1)) * (l -1)))); // Runs function, rounds, and calls checkValues() to verify that number is in RGB Range.
+        return checkValues(Math.round((((cdf - cdfMin) / ((height * width) - 1)) * (l - 1)))); // Runs function, rounds, and calls checkValues() to verify that number is in RGB Range.
 
 
     }
