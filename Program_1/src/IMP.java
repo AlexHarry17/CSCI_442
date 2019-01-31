@@ -1,6 +1,7 @@
 /*
  *Hunter Lloyd
  * Copyrite.......I wrote, ask permission if you want to use it outside of class.
+ * edited by Alex Harry
  */
 
 import javax.swing.*;
@@ -401,7 +402,7 @@ class IMP implements MouseListener {
                         }
                     }
                 // If statement to set values to black or white.
-                if (rgbVal > 255) {
+                if (rgbVal > 100) {
                     rgbArray[0] = 255;
                     rgbArray[1] = 255;
                     rgbArray[2] = 255;
@@ -475,45 +476,55 @@ class IMP implements MouseListener {
         setUpHistoJframe(redNorm, greenNorm, blueNorm); // Sets up Jframe and runs histogram on click.
     }
 
+
+
     private void equalizeImage() {  // method to equalize the image
-        int redCdf = 0;
-        int greenCdf = 0;
-        int blueCdf = 0;
-        Map<Integer, Integer> redMap = new HashMap<Integer, Integer>();
-        Map<Integer, Integer> greenMap = new HashMap<Integer, Integer>();
-        Map<Integer, Integer> blueMap = new HashMap<Integer, Integer>();
-        int temp[][] = picture;
-        int[] rgbArray = new int[4];
+        // Arrays needed for the functions.
+        int[] red = new int[256];
+        int[] green = new int[256];
+        int[] blue = new int[256];
+        int[] redNorm = new int[256];
+        int[] greenNorm = new int[256];
+        int[] blueNorm = new int[256];
+        int[] redCdf = new int[256];
+        int[] greenCdf = new int[256];
+        int[] blueCdf = new int[256];
+        int[][] temp = picture;
+
         for (int x = 0; x < height; x++) { // Gets pixel values and adds 1 to each count.
             for (int y = 0; y < width; y++) {
-                rgbArray = getPixelArray(picture[x][y]);
-                //Checks if the key is absent in the map, adds it if it is absent.
-                if (redMap.putIfAbsent(rgbArray[1], normalize((redCdf))) == null) {
-                    redCdf += rgbArray[1];  // Increases cdf value
-                }
-                if (greenMap.putIfAbsent(rgbArray[2], normalize((greenCdf))) == null) {
-                    greenCdf += rgbArray[2];// Increases cdf value
-                }
-                if (blueMap.putIfAbsent(rgbArray[3], normalize((blueCdf))) == null) {
-                    blueCdf += rgbArray[3];// Increases cdf value
-                }
+                int[] rgbArray = getPixelArray(picture[x][y]);
+                red[rgbArray[1]] += 1;
+                green[rgbArray[2]] += 1;
+                blue[rgbArray[3]] += 1;
             }
         }
-        for (int x = 0; x < height; x++) { // Gets pixel values and adds 1 to each count.
+        for (int i = 0; i < red.length; i++) {
+            if (i > 0) {
+                //gets the Cdf value for each RGB value.
+                redCdf[i] = red[i] + redCdf[i - 1];
+                greenCdf[i] = green[i] + greenCdf[i - 1];
+                blueCdf[i] = blue[i] + blueCdf[i - 1];
+            } else {
+                redCdf[i] = red[i];
+                greenCdf[i] = green[i];
+                blueCdf[i] = blue[i];
+            }
+            //Calls the normalize function and sets the value equal to the count of the RGB Value.
+            redNorm[normalize(redCdf[i])] = red[i];
+            greenNorm[normalize(greenCdf[i])] = green[i];
+            blueNorm[normalize(blueCdf[i])] = blue[i];
+        }
+        for (int x = 0; x < height; x++) {
             for (int y = 0; y < width; y++) {
-                rgbArray = getPixelArray(picture[x][y]);
-                for (int i = 0; i < 256; i++) {
-                    redMap.putIfAbsent(i, 0); // sets pixel to 0 if absent
-                    greenMap.putIfAbsent(i, 0);
-                    blueMap.putIfAbsent(i, 0);
-                }
-                rgbArray[1] = redMap.get(rgbArray[1]);  // sets rgb array to mapped values.
-                rgbArray[2] = greenMap.get(rgbArray[2]);
-                rgbArray[3] = blueMap.get(rgbArray[3]);
-                temp[x][y] = getPixels(rgbArray);   // sets temp image pixel location.
+                int[] rgbArray = getPixelArray(picture[x][y]);  // gets the pixel values
+                rgbArray[1] = normalize(redCdf[rgbArray[1]]);   // adds the equalized pixel to the frame.
+                rgbArray[2] = normalize(greenCdf[rgbArray[2]]);
+                rgbArray[3] = normalize(blueCdf[rgbArray[3]]);
+                temp[x][y] = getPixels(rgbArray);   //sets temp to the equalized array
             }
         }
-        picture = temp;
+        picture = temp; //resets the picture
         resetPicture();
     }
 
