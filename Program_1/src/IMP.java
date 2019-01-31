@@ -1,6 +1,7 @@
 /*
  *Hunter Lloyd
  * Copyrite.......I wrote, ask permission if you want to use it outside of class.
+ * edited by Alex Harry
  */
 
 import javax.swing.*;
@@ -9,17 +10,11 @@ import java.awt.event.*;
 import java.io.File;
 import java.awt.image.PixelGrabber;
 import java.awt.image.MemoryImageSource;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.prefs.Preferences;
-
-/*TODO  Turn a color image into a grayscale image first and then do a minimum of 3x3 mask to do edge detection. 5x5 will work better and be worth more.
-        See notes below */
-/*TODO        Show a histogram of the colors in a separate window
-        See notes below */
-/*TODO        Use the values in the histogram to equalize the image:
-        Use the mapping function to normalize the distribution evenly
-        https://en.wikipedia.org/wiki/Histogram_equalization */
-/*TODO        Track a colored object.....orange is easiest. Result is a binary image that is black except where the colored object is located.
-        See notes below (I'll also cover this next Wednesday) */
 
 
 class IMP implements MouseListener {
@@ -95,12 +90,6 @@ class IMP implements MouseListener {
         butPanel.setBackground(Color.black);
         start = new JButton("start");
         start.setEnabled(false);
-        start.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                removeRed();
-            }
-        });
         butPanel.add(start);
         frame.getContentPane().add(butPanel, BorderLayout.SOUTH);
         frame.setJMenuBar(bar);
@@ -121,6 +110,8 @@ class IMP implements MouseListener {
         JMenuItem blur = new JMenuItem("Blur Image"); // Dropdown menu item
         JMenuItem edgeDetection = new JMenuItem("Edge Detection"); // Dropdown menu item
         JMenuItem histogram = new JMenuItem("Histogram"); // Dropdown menu item
+        JMenuItem normalizeHistogram = new JMenuItem("Normalized Histogram"); // Dropdown menu item
+        JMenuItem equalizeImage = new JMenuItem("Equalize Image"); // Dropdown menu item
         JMenuItem colorDetection = new JMenuItem("Color Detection"); // Dropdown menu item
 
 
@@ -151,19 +142,31 @@ class IMP implements MouseListener {
                 blur();  // Calls method to rotate the image.
             }
         });
-//        edgeDetection.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent evt) {
-//                edgeDetection();  // Calls method to rotate the image.
-//            }
-//        });
+        edgeDetection.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                edgeDetection();  // Calls method to rotate the image.
+            }
+        });
         histogram.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 histogram();  // Calls method to rotate the image.
             }
         });
-        histogram.addActionListener(new ActionListener() {
+        normalizeHistogram.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                normalizeHistogram();  // Calls method to rotate the image.
+            }
+        });
+        equalizeImage.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                equalizeImage();  // Calls method to rotate the image.
+            }
+        });
+        colorDetection.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 colorDetection();  // Calls method to rotate the image.
@@ -174,8 +177,10 @@ class IMP implements MouseListener {
         fun.add(rotate);
         fun.add(greyScale);
         fun.add(blur);
-        //  fun.add(edgeDetection);
+        fun.add(edgeDetection);
         fun.add(histogram);
+        fun.add(normalizeHistogram);
+        fun.add(equalizeImage);
         fun.add(colorDetection);
         return fun;
 
@@ -190,10 +195,8 @@ class IMP implements MouseListener {
         JFileChooser chooser = new JFileChooser();
         Preferences pref = Preferences.userNodeForPackage(IMP.class);
         String path = pref.get("DEFAULT_PATH", "");
-
         chooser.setCurrentDirectory(new File(path));
         int option = chooser.showOpenDialog(frame);
-
         if (option == JFileChooser.APPROVE_OPTION) {
             pic = chooser.getSelectedFile();
             pref.put("DEFAULT_PATH", pic.getAbsolutePath());
@@ -203,16 +206,11 @@ class IMP implements MouseListener {
         height = img.getIconHeight();
         originalHeight = height;
         originalWidth = width;
-
         JLabel label = new JLabel(img);
         label.addMouseListener(this);
         pixels = new int[width * height];
-
         results = new int[width * height];
-
-
         Image image = img.getImage();
-
         PixelGrabber pg = new PixelGrabber(image, 0, 0, width, height, pixels, 0, width);
         try {
             pg.grabPixels();
@@ -226,6 +224,7 @@ class IMP implements MouseListener {
         mp.removeAll();
         mp.add(label);
         mp.revalidate();
+        reset();
     }
 
     /*
@@ -237,8 +236,6 @@ class IMP implements MouseListener {
         for (int i = 0; i < height; i++)
             for (int j = 0; j < width; j++)
                 picture[i][j] = pixels[i * width + j];
-
-
     }
 
     /*
@@ -257,7 +254,6 @@ class IMP implements MouseListener {
         mp.add(label2);
         mp.revalidate();
         mp.repaint();
-
     }
 
     /*
@@ -284,7 +280,6 @@ class IMP implements MouseListener {
         temp[2] = (pixel >> 8) & 0xff;
         temp[3] = (pixel) & 0xff;
         return temp;
-
     }
 
     /*
@@ -316,7 +311,6 @@ class IMP implements MouseListener {
      * integer value so you can give it back to the program and display the new picture.
      */
     private void removeRed() {
-
         for (int i = 0; i < height; i++)
             for (int j = 0; j < width; j++) {
                 int rgbArray[] = new int[4];
@@ -328,7 +322,6 @@ class IMP implements MouseListener {
             }
         resetPicture();
     }
-
 
     private void rotateImage() {    // Method to rotate the image 90 degrees.
         int temp[] = new int[width * height];
@@ -351,7 +344,6 @@ class IMP implements MouseListener {
         switchHeightWidth();
         resetPicture();
     }
-
 
     private void greyScale() { // Method to turn picture to grey scale.
         for (int i = 0; i < height; i++)
@@ -384,10 +376,9 @@ class IMP implements MouseListener {
                                 rgbArray[count] += pixelValues[count];  // adds value to temp rgb array
                             }
                         }
-
                     }
                 for (int count = 0; count < rgbArray.length; count++) {
-                    rgbArray[count] /= counter; // gets the average of the argb value.
+                    rgbArray[count] = checkValues(rgbArray[count] / counter); // gets the average of the argb value.
                 }
                 temp[i][j] = getPixels(rgbArray);   // Adds the pixel of the blurred image in a temp array.
             }
@@ -395,23 +386,214 @@ class IMP implements MouseListener {
         resetPicture();
     }
 
-    private void histogram() {
-
-        resetPicture();
-
-    }
-
-    private void colorDetection() {
+    private void edgeDetection() {
         int[][] temp = picture;
         int boundryAdjust[] = {-1, 0, 1}; // array to loop through for surrounding values
         greyScale(); // Sets picture to grey scale
-        for (int i = 1; i < height - 2; i++)
-            for (int j = 1; j < width - 2; j++) {
-
+        for (int i = 0; i < height; i++)
+            for (int j = 0; j < width; j++) {
+                int[] rgbArray = getPixelArray(picture[i][j]);// array to add up rgb values to use for average in a later function.
+                int rgbVal = picture[i][j] * 8; // Multiplies current pixel by surrounding value.
+                for (int h = 0; h < boundryAdjust.length; h++)  // loops through the boundryAdjust array.  this grabs the surrounding locations in the Array.
+                    for (int w = 0; w < boundryAdjust.length; w++) {
+                        if (i + boundryAdjust[h] >= 0 && i + boundryAdjust[h] < height && j + boundryAdjust[w] >= 0 && j + boundryAdjust[w] < width) {  //Long if statement to prevent array out of bounds.
+                            int pixelValues = picture[i + boundryAdjust[h]][j + boundryAdjust[w]]; //gets the pixel array of the current surrounding pixel location.
+                            rgbVal += pixelValues * -1; //Adds surrounding pixel value to current pixel location.
+                        }
+                    }
+                // If statement to set values to black or white.
+                if (rgbVal > 100) {
+                    rgbArray[0] = 255;
+                    rgbArray[1] = 255;
+                    rgbArray[2] = 255;
+                    rgbArray[3] = 255;
+                } else {
+                    rgbArray[0] = 0;
+                    rgbArray[1] = 0;
+                    rgbArray[2] = 0;
+                    rgbArray[3] = 0;
+                }
+                temp[i][j] = getPixels(rgbArray);   // Adds the pixel of the blurred image in a temp array.
             }
         picture = temp;
         resetPicture();
     }
+
+    /*TODO        Use the values in the histogram to equalize the image:
+            Use the mapping function to normalize the distribution evenly
+            https://en.wikipedia.org/wiki/Histogram_equalization */
+    private void histogram() {
+        int[] red = new int[256];
+        int[] green = new int[256];
+        int[] blue = new int[256];
+        for (int x = 0; x < height; x++) { // Gets pixel values and adds 1 to each count.
+            for (int y = 0; y < width; y++) {
+                int[] rgbArray = getPixelArray(picture[x][y]);
+                red[rgbArray[1]] += 1;
+                green[rgbArray[2]] += 1;
+                blue[rgbArray[3]] += 1;
+            }
+        }
+        setUpHistoJframe(red, green, blue); // runs method for jframe to draw histogram
+    }
+
+    private void normalizeHistogram() {
+        // Arrays needed for the functions.
+        int[] red = new int[256];
+        int[] green = new int[256];
+        int[] blue = new int[256];
+        int[] redNorm = new int[256];
+        int[] greenNorm = new int[256];
+        int[] blueNorm = new int[256];
+        int[] redCdf = new int[256];
+        int[] greenCdf = new int[256];
+        int[] blueCdf = new int[256];
+
+        for (int x = 0; x < height; x++) { // Gets pixel values and adds 1 to each count.
+            for (int y = 0; y < width; y++) {
+                int[] rgbArray = getPixelArray(picture[x][y]);
+                red[rgbArray[1]] += 1;
+                green[rgbArray[2]] += 1;
+                blue[rgbArray[3]] += 1;
+            }
+        }
+        for (int i = 0; i < red.length; i++) {
+            if (i > 0) {
+                //gets the Cdf value for each RGB value.
+                redCdf[i] = red[i] + redCdf[i - 1];
+                greenCdf[i] = green[i] + greenCdf[i - 1];
+                blueCdf[i] = blue[i] + blueCdf[i - 1];
+            } else {
+                redCdf[i] = red[i];
+                greenCdf[i] = green[i];
+                blueCdf[i] = blue[i];
+            }
+            //Calls the normalize function and sets the value equal to the count of the RGB Value.
+            redNorm[normalize(redCdf[i])] = red[i];
+            greenNorm[normalize(greenCdf[i])] = green[i];
+            blueNorm[normalize(blueCdf[i])] = blue[i];
+        }
+        setUpHistoJframe(redNorm, greenNorm, blueNorm); // Sets up Jframe and runs histogram on click.
+    }
+
+
+
+    private void equalizeImage() {  // method to equalize the image
+        // Arrays needed for the functions.
+        int[] red = new int[256];
+        int[] green = new int[256];
+        int[] blue = new int[256];
+        int[] redNorm = new int[256];
+        int[] greenNorm = new int[256];
+        int[] blueNorm = new int[256];
+        int[] redCdf = new int[256];
+        int[] greenCdf = new int[256];
+        int[] blueCdf = new int[256];
+        int[][] temp = picture;
+
+        for (int x = 0; x < height; x++) { // Gets pixel values and adds 1 to each count.
+            for (int y = 0; y < width; y++) {
+                int[] rgbArray = getPixelArray(picture[x][y]);
+                red[rgbArray[1]] += 1;
+                green[rgbArray[2]] += 1;
+                blue[rgbArray[3]] += 1;
+            }
+        }
+        for (int i = 0; i < red.length; i++) {
+            if (i > 0) {
+                //gets the Cdf value for each RGB value.
+                redCdf[i] = red[i] + redCdf[i - 1];
+                greenCdf[i] = green[i] + greenCdf[i - 1];
+                blueCdf[i] = blue[i] + blueCdf[i - 1];
+            } else {
+                redCdf[i] = red[i];
+                greenCdf[i] = green[i];
+                blueCdf[i] = blue[i];
+            }
+            //Calls the normalize function and sets the value equal to the count of the RGB Value.
+            redNorm[normalize(redCdf[i])] = red[i];
+            greenNorm[normalize(greenCdf[i])] = green[i];
+            blueNorm[normalize(blueCdf[i])] = blue[i];
+        }
+        for (int x = 0; x < height; x++) {
+            for (int y = 0; y < width; y++) {
+                int[] rgbArray = getPixelArray(picture[x][y]);  // gets the pixel values
+                rgbArray[1] = normalize(redCdf[rgbArray[1]]);   // adds the equalized pixel to the frame.
+                rgbArray[2] = normalize(greenCdf[rgbArray[2]]);
+                rgbArray[3] = normalize(blueCdf[rgbArray[3]]);
+                temp[x][y] = getPixels(rgbArray);   //sets temp to the equalized array
+            }
+        }
+        picture = temp; //resets the picture
+        resetPicture();
+    }
+
+
+    private int normalize(int cdf) {    // Function to normalize the histogram.
+        double cdfMin = 1.0;    // CDF min value
+        double l = 256.0; // Length
+//        int test = (int) (((cdf-cdfMin)/((64)-1)) * (l -1));
+//        return checkValues(Math.round(((cdf - cdfMin) / ((height * width) - cdfMin)) * (l - 1)));
+        return checkValues(Math.round((((cdf - cdfMin) / ((height * width) - 1)) * (l - 1)))); // Runs function, rounds, and calls checkValues() to verify that number is in RGB Range.
+
+
+    }
+
+    private void setUpHistoJframe(int[] red, int[] green, int[] blue) { // Method that sets up the jFrame for the Histogram.
+        // Provided by Hunter.
+        int histoHeight = 600;
+        JFrame redFrame = new JFrame("Red");
+        redFrame.setSize(256, histoHeight);
+        redFrame.setLocation(800, 0);
+        JFrame greenFrame = new JFrame("Green");
+        greenFrame.setSize(256, histoHeight);
+        greenFrame.setLocation(1067, 0);
+        JFrame blueFrame = new JFrame("blue");
+        blueFrame.setSize(256, histoHeight);
+        blueFrame.setLocation(1334, 0);
+        MyPanel redPanel = new MyPanel(red, "red");
+        MyPanel greenPanel = new MyPanel(green, "green");
+        MyPanel bluePanel = new MyPanel(blue, "blue");
+        redFrame.getContentPane().add(redPanel, BorderLayout.CENTER);
+        redFrame.setVisible(true);
+        greenFrame.getContentPane().add(greenPanel, BorderLayout.CENTER);
+        greenFrame.setVisible(true);
+        blueFrame.getContentPane().add(bluePanel, BorderLayout.CENTER);
+        blueFrame.setVisible(true);
+        start.setEnabled(true);
+        start.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {  // Draws histograms on click
+                redPanel.drawing(histoHeight);
+                greenPanel.drawing(histoHeight);
+                bluePanel.drawing(histoHeight);
+                start.setEnabled(false);    // Disables button after histogram is drawn.
+            }
+        });
+    }
+
+
+    private void colorDetection() {
+        for (int i = 0; i < height; i++)
+            for (int j = 0; j < width; j++) {
+                int rgbArray[] = getPixelArray(picture[i][j]);
+                int color;
+                //get three ints for R, G and B
+                if (rgbArray[1] > 208 && rgbArray[2] < 140 && rgbArray[2] > 50 && rgbArray[3] < 100) { // Orange has r =255 and b = 0
+                    color = 255;
+
+                } else {
+                    color = 0;
+                    //take three ints for R, G, B and put them back into a single int
+                }
+                for (int count = 1; count < rgbArray.length; count++) {
+                    rgbArray[count] = color;   // Sets value to white.
+                }
+                picture[i][j] = getPixels(rgbArray);
+            }
+        resetPicture();
+    }
+
 
     private int checkValues(double rgb_value) { //Corrects value if greater than 255 or less than 0
         if (rgb_value > 255.0) {
